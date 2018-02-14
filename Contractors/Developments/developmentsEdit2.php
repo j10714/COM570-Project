@@ -10,9 +10,10 @@
 			
 		$developmentID2=$_GET["id"];
 		
-		if (isset($_POST["submit"])) {
-		
+		if (isset($_POST["submit"])) 
+		{
 			include ("/Project/dbConnect.php");
+			
 				$developmentID2=$_GET["id"];
 				$developmentName2=$_POST["developmentName"];
 				$developmentAddress2=$_POST["developmentAddress"];
@@ -29,7 +30,7 @@
 				$dbQuery2->execute($dbParams2);
 				
 				echo "<script>window.location.href ='/Project/index.php'</script>";
-			}
+		}
 
 	?>
 

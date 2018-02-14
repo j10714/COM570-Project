@@ -6,13 +6,6 @@
 		
 		
 		//$_SESSION["username"];
-
-		
-			
-		if(!has_Restriction("contractor:administrator",$userID))
-		{
-			echo "<script>window.location.href = '/Project/permissionDeniedMessage.php?permission=0'</script>";
-		}
 	?>
 <head>
   <title>Bootstrap Example</title>
@@ -40,23 +33,6 @@
             </li>
           </ul>
 		  <ul class="navbar-nav px-3">
-                <li class="nav-item text-nowrap">
-				<?php 
-					 if (isset($_SESSION["user_id"]))						 
-					{
-						?>
-						<a class="nav-link" href="/Project/Login/loginB.php"><?php echo ?> Account</a>
-						<?php
-					}
-					else
-					{
-						?>
-						<a class="nav-link" href="/Project/Login/loginB.php">Login</a>
-						<?php
-						
-					}
-				?>
-                </li>
             </ul>
         </div>
       </nav>

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <?php
+include("../dbConnect.php");
 ?>
 <html>
 
@@ -203,24 +204,30 @@ else{
 
 
 	<form id="contactForm" class="form-horizontal" role="form" method="post" action="/Project/Register/registeruser.php" onSubmit="return validate();">
-		
+	<?php
+		if (isset($_GET["userRole"])) 
+		   {
+			  if ($_GET["userRole"]==2)
+				 echo "<tr><td><div class='alert alert-info' role='alert'>
+					<strong>Heads up!</strong>Please Register Supplier Account Below
+				</div></td></tr>";
+		   } 
+	?>		   
    <tr>
    <td>
 	<div id="loginInfo"class="form-group">
-    <label for="exampleInputEmail1">Username</label>
-    <input type="text" class="form-control" name="username" placeholder="Your Username" onkeyup="validate(); onclick=validate(); return false;">
+    <label for="username">Username</label>
+    <input type="text" class="form-control" name="username" placeholder="Username" onkeyup="validate(); onclick=validate(); return false;">
     <span id="usernameValidation" class="usernameValidation"></span>
   </div>
-  </td>
-  <td>
   </td>
   </tr>
 		
 <tr>
   <td>
   <div id="loginInfo"class="form-group">
-    <label for="exampleInputEmail1">Email</label>
-    <input type="text" class="form-control" name="email" placeholder="Your Email" onkeyup="validate(); onclick=validate(); return false;">
+    <label for="email">Email</label>
+    <input type="text" class="form-control" name="email" placeholder="Email" onkeyup="validate(); onclick=validate(); return false;">
     <span id="emailValidation" class="emailValidation"></span>
   </div>
   </td>
@@ -228,23 +235,115 @@ else{
   <td>
   </tr>
 		
-		<tr>
-  <td>
-  <div id="loginInfo"class="form-group">
-    <label for="exampleInputEmail1">Password</label>
-    <input type="password" class="form-control" name="password" placeholder="Password" onkeyup="validate();  onclick=validate(); return false;">
-    <span id="passwordValidation" class="passwordValidation"></span>
-  </div>
-  </td>
-  <td>
-  </td>
-  </tr>
+<tr>
+	<td>
+		<div id="loginInfo"class="form-group">
+			<label for="title">Title</label>
+			<select id="title" class="form-control" name="title" placeholder="Title"  onkeyup="validate();  onclick=validate(); return false;">
+				<option>Mr</option>
+				<option>Mrs</option>
+				<option>Ms</option>
+				<option>Miss</option>
+			</select>
+			<span id="titleValidation" class="titleValidation"></span>
+		</div>
+	</td>
+</tr>
+
+<tr>
+	<td>
+		<div id="loginInfo"class="form-group">
+			<label for="firstName">First Name</label>
+			<input type="text" class="form-control" name="firstName" placeholder="First Name" onkeyup="validate(); onclick=validate(); return false;">
+			<span id="usernameValidation" class="usernameValidation"></span>
+		</div>
+	</td>
+</tr>
+
+<tr>
+	<td>
+		<div id="loginInfo"class="form-group">
+			<label for="lastName">Last Name</label>
+			<input type="text" class="form-control" name="lastName" placeholder="Last Name" onkeyup="validate(); onclick=validate(); return false;">
+			<span id="usernameValidation" class="usernameValidation"></span>
+		</div>
+	</td>
+</tr>
+
+<tr>
+	<td>
+		<div id="loginInfo"class="form-group">
+			<label for="address">Address</label>
+			<input type="text" class="form-control" name="address" placeholder="Address" onkeyup="validate(); onclick=validate(); return false;">
+			<span id="usernameValidation" class="usernameValidation"></span>
+		</div>
+	</td>
+</tr>
+
+<tr>
+	<td>
+		<div id="loginInfo"class="form-group">
+			<label for="town">Town</label>
+			<input type="text" class="form-control" name="town" placeholder="Town" onkeyup="validate(); onclick=validate(); return false;">
+			<span id="usernameValidation" class="usernameValidation"></span>
+		</div>
+	</td>
+</tr>
+
+<tr>
+	<td>
+		<div id="loginInfo"class="form-group">
+			<label for="postcode">Postcode</label>
+			<input type="text" class="form-control" name="postcode" placeholder="Postcode" onkeyup="validate(); onclick=validate(); return false;">
+			<span id="usernameValidation" class="usernameValidation"></span>
+		</div>
+	</td>
+</tr>
+
+<tr>
+	<td>
+		<div id="loginInfo"class="form-group">
+			<label for="county">County</label>
+			<select id="county" class="form-control" name="county" placeholder="County"  onkeyup="validate();  onclick=validate(); return false;">
+				<option>Antrim</option>
+				<option>Armagh</option>
+				<option>Down</option>
+				<option>Fermanagh</option>
+				<option>Londonderry</option>
+				<option>Tyrone</option>
+			</select>
+			<span id="titleValidation" class="titleValidation"></span>
+		</div>
+	</td>
+</tr>
+
+<tr>
+	<td>
+		<div id="loginInfo"class="form-group">
+			<label for="phone">Phone</label>
+			<input type="text" class="form-control" name="phone" placeholder="Contact Number" onkeyup="validate(); onclick=validate(); return false;">
+			<span id="usernameValidation" class="usernameValidation"></span>
+		</div>
+	</td>
+</tr>
+
+
+
+<tr>
+	<td>
+		<div id="loginInfo"class="form-group">
+			<label for="exampleInputEmail1">Password</label>
+			<input type="password" class="form-control" name="password" placeholder="Password" onkeyup="validate();  onclick=validate(); return false;">
+			<span id="passwordValidation" class="passwordValidation"></span>
+		</div>
+	</td>
+</tr>
 
   
 		<tr>
   <td>
   <div id="loginInfo"class="form-group">
-    <label for="exampleInputEmail1">Confirm Password</label>
+    <label for="password2">Confirm Password</label>
     <input type="password" class="form-control" name="password2" placeholder="Confirm Password" onkeyup="validate(); onclick=validate(); return false;">
     <span id="confirmMessage" class="confirmMessage"></span>
   </div>
@@ -252,13 +351,35 @@ else{
   <td>
   </td>
   </tr>
+  
+  <tr>
+	<td>
+		<div id="loginInfo"class="form-group">
+			<label for="user_Role">User Role</label>
+			<select id="user_Role" class="form-control" name="user_Role" placeholder="User Role"  onkeyup="validate();  onclick=validate(); return false;">
+				<?php $dbQuery1=$db->prepare("select * from user_roles");
+				$dbQuery1->execute();
+				while ($dbRow = $dbQuery1->fetch(PDO::FETCH_ASSOC)) 
+				{
+					$role_name=$dbRow["role_name"];
+					
+				echo "<option>$role_name</option>";
+				}
+				?>
+			</select>
+			
+			
+			<span id="titleValidation" class="titleValidation"></span>
+		</div>
+	</td>
+</tr>
 		
-		<tr>
+<tr>
   <td>
   <div id = "loginInfo"class="form-group">
 		<span class="glyphicon glyphicon-eye-open"></span>
         <label for="human">2 + 3 = ?</label> 		
-            <input type="text" class="form-control" id="human" name="human" placeholder="Your Answer" onkeyup="validate(); onclick=validate(); return false;">
+            <input type="text" class="form-control" id="human" name="human" placeholder="Answer" onkeyup="validate(); onclick=validate(); return false;">
             <span id="humanValidation" class="humanValidation"></span>
         </div>
   </td>
