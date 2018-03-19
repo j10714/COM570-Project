@@ -1,5 +1,6 @@
 <?php
 	$userID=0;
+	$phase_id=0;
 	session_start();
 	include("../dbConnect.php");
 	include("../restrictionCheck.php");
@@ -11,7 +12,6 @@
 		{
 			header("Location: index.php");
 		}
-	
 	if (isset($_SESSION["currentUserID"]))
 	{
 	  $userID =$_SESSION["currentUserID"];
@@ -20,75 +20,32 @@
 		{
 		}
 	}
-	$approved=0;
-	$reject=0;
-	$count=0;
-	$phase_id=$_GET["phaseID"];
 	
-	if (isset($_GET["supplier_id0"])) 
+		$phase_id=$_GET["phaseID"];
+		$developmentID=$_GET["DevelopmentID"];
+	if (isset($_POST["approve"])) 
 	{
-		$supplier_id=$_GET["supplier_id0"];
-		$supplier_status=0;
-		
-		$dbQuery4=$db->prepare("UPDATE suppliers SET supplier_status = '$supplier_status' WHERE supplier_id=:id");
-		$dbParams4=array('id'=>$supplier_id);
-		//yellow is database field organge = form posting
-		$dbQuery4->execute($dbParams4);
-		
-		$dbQuery5=$db->prepare("select * from suppliers WHERE supplier_id=:supplier_id");
-		$dbParams5=array('supplier_id'=>$supplier_id);
-		$dbQuery5->execute($dbParams5);
-		while ($dbRow = $dbQuery5->fetch(PDO::FETCH_ASSOC)) 
-			{
-				$user_id2=$dbRow["user_id"];
-				$role_id2=99;
-				$user_status=0;
-				
-				$dbQuery6=$db->prepare("UPDATE user_roles_assign SET role_id = '$role_id2' WHERE user_id=:id");
-				$dbParams6=array('id'=>$user_id2);
-				$dbQuery6->execute($dbParams6);
-				
-				$dbQuery18=$db->prepare("UPDATE users SET user_status = '$user_status' WHERE user_id=:id");
-				$dbParams18=array('id'=>$user_id2);
-				$dbQuery18->execute($dbParams18);
-				
-			}
-		echo "<script>window.location.href = '/Project/Suppliers/index.php'</script>";
-		
-	}//elseif
 	
-	else if (isset($_GET["supplier_id1"])) 
-	{
-		$supplier_id=$_GET["supplier_id1"];
-		$supplier_status=1;
-		$user_status=1;
-		
-		$dbQuery7=$db->prepare("UPDATE suppliers SET supplier_status = '$supplier_status' WHERE supplier_id=:id");
-		$dbParams7=array('id'=>$supplier_id);
-		//yellow is database field organge = form posting
-		$dbQuery7->execute($dbParams7);
-		
-		
-		$dbQuery8=$db->prepare("select * from suppliers WHERE supplier_id=:supplier_id");
-		$dbParams8=array('supplier_id'=>$supplier_id);
-		$dbQuery8->execute($dbParams8);
-		while ($dbRow = $dbQuery8->fetch(PDO::FETCH_ASSOC)) 
+		if(!empty($_POST['checkSupplier'])) 
+		{
+			$reject=99;
+			//echo '<h3>You have selected the following</h3>';
+			foreach($_POST["checkSupplier"] as $checkSupplier)
 			{
-				$user_id3=$dbRow["user_id"];
-				$role_id3=2;
-				
-				$dbQuery9=$db->prepare("UPDATE user_roles_assign SET role_id = '$role_id3' WHERE user_id=:id");
-				$dbParams9=array('id'=>$user_id3);
-				$dbQuery9->execute($dbParams9);
-				
-				$dbQuery19=$db->prepare("UPDATE users SET user_status = '$user_status' WHERE user_id=:id");
-				$dbParams19=array('id'=>$user_id3);
-				$dbQuery19->execute($dbParams19);
-				
+				//$dbQuery4=$db->prepare("insert into phase_supplier values(null,:phase_id,:supplier_id)");
+				//$dbParams4=array('phase_id'=>$phase_id, 'supplier_id'=>$checkSupplier);
+				//yellow is database field organge = form posting
+				//$dbQuery4->execute($dbParams4);
+				//echo '<p>'.$checkSupplier.'</p>';
 			}
-		echo "<script>window.location.href = '/Project/Suppliers/index.php'</script>";
+			//echo "<script>window.location.href = '/Project/Suppliers/index.php'</script>";
+		}
 		
-	}//elseif
+	}
+	if($phase_id==null)
+		{
+			//echo "<script>window.location.href = '/Project/Contractors/Developments/index.php'</script>";	   
+		}
 ?>
 <!doctype html>
 <html lang="en">
@@ -166,10 +123,10 @@
 			</header>
 
 			<div class="container">
-				<h1>Supplier Area</h1>
+				<h1>Supplier Assign</h1>
 							<ul class="nav nav-tabs role="tablist">
 								<li class="nav-item">
-									<a class="nav-link active" href="index.php">Current Suppliers</a>
+									<a class="nav-link" href="index.php">Current Suppliers</a>
 								</li>
 								<li class="nav-item">
 								  <a class="nav-link" href="selectionApproval.php">Selection Approval</a>
@@ -178,60 +135,83 @@
 								  <a class="nav-link" href="/Project/Register/register.php?userRole=2">Add Supplier</a>
 								</li>
 								<li class="nav-item">
-								  <a class="nav-link" href="assignPhaseToSupplier.php">Supplier Assign</a>
+								 <?php echo "<a class='nav-link active' href='/Project/Suppliers/assignPhaseToSupplier.php?DevelopmentID=$developmentID&phaseID=$phase_id'>Supplier Assign</a>";?>
 								</li>
 							</ul>
 						<div class="table-responsive">
+						<?php
+						if($phase_id!=null)
+						{
+							?>
 							<table class="table table-striped">
 								<thead>
 									<tr>
-									  <th>Supplier ID</th>
-									  <th>Supplier Name</th>
-									  <th>User Account ID</th>
-									  <th>Supplier Status</th>
+									  <th></th>
+									  <th>phase ID</th>
+									  <th>supplier ID</th>
+									  <th>Status</th>
 									</tr>
 								</thead>
-								<?php
-								$dbQuery10=$db->prepare("select * from suppliers");
-								$dbQuery10->execute();
-								while ($dbRow = $dbQuery10->fetch(PDO::FETCH_ASSOC)) 
-								{
-									$supplierID=$dbRow["supplier_id"];
-									$user_id4=$dbRow["user_id"];
-									$supplierStatus=$dbRow["supplier_status"];
-									
-									$dbQuery11=$db->prepare("select * from users WHERE user_id=:user_id");
-									$dbParams11=array('user_id'=>$user_id4);
-									$dbQuery11->execute($dbParams11);
-									
-									while ($dbRow = $dbQuery11->fetch(PDO::FETCH_ASSOC)) 
-									{
-									
-										$user_id5=$dbRow["user_id"];
-										$user_title=$dbRow["user_title"];
-										$user_firstname=$dbRow["user_firstname"];
-										$user_lastname=$dbRow["user_lastname"];
-										
-										echo "<form method='post' action='index.php'>
-										<tbody>
-											<tr>
-												<td>$supplierID</td>
-												<td>$user_title $user_firstname $user_lastname</td>
-												<td>$user_id5</td>";
-												if($supplierStatus > 0 )
-												{
-													echo"<td><a class='btn btn-primary' href='index.php?supplier_id0=".$supplierID."'>Deactivate Supplier</a></td>";
-												}
-												else
-												{
-													echo"<td><a class='btn btn-primary' href='index.php?supplier_id1=".$supplierID."'>Activate Supplier</a></td>";
-												}
-											echo "</tr>
-										</tbody>
-										</form>";
-									}
-								}
-							?>
+								
+							<?php
+							$count=0;
+					echo"<form method='post' action='assignPhaseToSupplier.php?phaseID=$phase_id'>";
+					$dbQuery1=$db->prepare("select * from phase_supplier WHERE phase_id=:id");
+					$dbParams1=array('id'=>$phase_id);
+					$dbQuery1->execute($dbParams1);
+					$dataRows1 = $dbQuery1->rowCount();
+					while ($dbRow = $dbQuery1->fetch(PDO::FETCH_ASSOC)) 
+					{
+						$id=$dbRow["id"];
+						$phase_id1=$dbRow["phase_id"];
+						$supplier_id=$dbRow["supplier_id"];
+						echo "<tbody>
+							<tr>
+								<td></td>
+								<td>$id</td>
+								<td>$phase_id1</td>
+								<td>$supplier_id</td>
+								<td>Active</td>
+								<td><label class='form-check-label'><input type='checkbox' name='checkPhase[]' class='form-check-input' id='checkboxSuccess' value='$phase_id1' checked></label></td>";
+								$items[$count] = $supplier_id;
+							echo"	
+							</tr>
+						</tbody>";
+						
+						$count=$count+1;
+					
+					$count2=$count;
+					?>
+					<button name='approve' type='submit' class='btn btn-primary'>Activate</button>
+					</form>
+							</table>
+							<table class="table table-striped">
+							<?php
+							
+						$dbQuery2=$db->prepare("select * from suppliers WHERE supplier_id!=:id");
+						$dbParams2=array('id'=>$supplier_id);
+						$dbQuery2->execute($dbParams2);
+						$dataRows1 = $dbQuery1->rowCount();
+						
+						if($dataRows1>0)
+						{
+							$supplier_id1=$dbRow["supplier_id"];
+							echo "<tbody>
+								<tr>
+									<td>  
+										<label class='form-check-label'><input type='checkbox' name='checkSupplier[]' class='form-check-input' id='checkboxSuccess' value='$supplier_id1'></label>
+									</td>
+									<td>$supplier_id1</td>
+									<td>$count2</td>
+									<td>$items[0]</td>";
+									echo "<td>".count($items)."</td>
+									<td>$count2</td>
+								</tr>
+							</tbody>";
+						}
+					}
+						}
+						?>
 							</table>
 						</div>
 			</div>

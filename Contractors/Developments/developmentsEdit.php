@@ -1,8 +1,20 @@
 <?php	
+	$userID=0;
 	session_start();
 	include("../../dbConnect.php");
 	include("../../restrictionCheck.php");
-	$userID =$_SESSION["currentUserID"];	
+	include("../../imageUpload.php");
+	include("../../userActivity.php");
+	include("../../email.php");
+	
+	if (isset($_SESSION["currentUserID"]))
+	{
+	  $userID =$_SESSION["currentUserID"];
+	  
+	  	if(has_acitivity($userID))
+		{
+		}
+	}	
 	if(!has_Restriction("contractor:administrator",$userID))
 	{
 		echo "<script>window.location.href = '/Project/permissionDeniedMessage.php?permission=0'</script>";

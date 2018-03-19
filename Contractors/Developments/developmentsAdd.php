@@ -1,13 +1,28 @@
 <?php
+	$userID=0;
 	session_start();
 	include("../../dbConnect.php");
 	include("../../restrictionCheck.php");
 	include("../../imageUpload.php");
-	$userID =$_SESSION["currentUserID"];
+	include("../../userActivity.php");
+	include("../../email.php");
+	
+	if (isset($_SESSION["currentUserID"]))
+	{
+	  $userID =$_SESSION["currentUserID"];
+	  
+	  	if(has_acitivity($userID))
+		{
+		}
+	}
 
 	if(!has_Restriction("contractor:administrator",$userID))
 	{
 		echo "<script>window.location.href = '/Project/permissionDeniedMessage.php?permission=0'</script>";
+	}
+	
+	if(!has_acitivity($userID))
+	{
 	}
 
 	if (isset($_POST["submit"])) 
@@ -15,18 +30,12 @@
 		//fields from form to add to Database
 		$developmentName=$_POST["developmentName"];
 		$developmentAddress=$_POST["developmentAddress"];
-		$developmentPlots=$_POST["developmentPlots"];
 		$developmentStatus=$_POST["developmentStatus"];
 		$developmentCity=$_POST["developmentCity"];
 		$developmentState=$_POST["developmentState"];
 		$developmentPostcode=$_POST["developmentPostcode"];
 		$developmentImageName=$_POST["name"];
-
-		$dbQuery=$db->prepare("insert into development values(null,:development_name,:development_address,:development_plots,:development_status,:development_city,:development_state,:development_postcode, :development_imagename, :development_imagefile)");
-		$dbParams=array('development_name'=>$developmentName, 'development_address'=>$developmentAddress, 'development_plots'=>$developmentPlots, 'development_status'=>$developmentStatus, 'development_city'=>$developmentCity, 'development_state'=>$developmentState, 'development_postcode'=>$developmentPostcode, 'development_imagename'=>$developmentImageName, 'development_imagefile'=>$file_name);
-		//yellow is database field organge = form posting
-		$dbQuery->execute($dbParams);
-
+		
 		$fileDest = '/kunden/homepages/11/d703192015/htdocs/Project/Contractors/Developments/images/';
 		$file = $_FILES['file'];
 
@@ -35,6 +44,13 @@
 		$file_tmp = $file['tmp_name'];
 		$file_size = $file['size'];
 		$file_error = $file['error'];
+
+		$dbQuery=$db->prepare("insert into development values(null,:development_name,:development_address,:development_status,:development_city,:development_state,:development_postcode, :development_imagename, :development_imagefile)");
+		$dbParams=array('development_name'=>$developmentName, 'development_address'=>$developmentAddress, 'development_status'=>$developmentStatus, 'development_city'=>$developmentCity, 'development_state'=>$developmentState, 'development_postcode'=>$developmentPostcode, 'development_imagename'=>$developmentImageName, 'development_imagefile'=>$file_name);
+		//yellow is database field organge = form posting
+		$dbQuery->execute($dbParams);
+
+
 
 		if(image_Upload($fileDest,$file_name,$file_tmp,$file_size,$file_error))
 		{
@@ -152,12 +168,7 @@
 						<input name="developmentPostcode" type="text" class="form-control" id="inputPostcode">
 					</div>
 					
-					<div class="form-group col-md-4">
-						<label for="inputPlots">Plots</label>
-						<input name="developmentPlots" type="text" class="form-control" id="inputPlots" placeholder="Number of Plots">
-					</div>
-					
-					<input type="text" name="name" placeholder="Meme name"><br>
+					<input type="text" name="name" placeholder="Image Name"><br>
 					<input type="file" name="file"><br>
 					
 				  <div class="form-group">

@@ -20,33 +20,9 @@
 	{
 		echo "<script>window.location.href = '/Project/permissionDeniedMessage.php?permission=0'</script>";
 	}
-	
-	if (isset($_POST["editDev"])) 
-	{
-		$developmentID1=$_GET["id"];
-		echo "<script>window.location.href ='/Project/Contractors/Developments/developmentsEdit.php?id=$developmentID1'</script>";
-	}
-	else if (isset($_POST["viewPlot"])) 
-	{
-		$developmentID1=$_GET["id"];
-		echo "<script>window.location.href ='/Project/Contractors/Plots/index.php?id=$developmentID1'</script>";
-	}
-	else if (isset($_POST["addPlot"])) 
-	{
-		$developmentID1=$_GET["id"];
-		echo "<script>window.location.href ='/Project/Contractors/Plots/index.php?id=$developmentID1'</script>";
-	}
-		else if (isset($_POST["viewPhase"])) 
-	{
-		$developmentID1=$_GET["id"];
-		echo "<script>window.location.href ='/Project/Contractors/Developments/developmentPhases.php?viewPhase=$developmentID1'</script>";
-	}
-	else if (isset($_POST["addPhase"])) 
-	{
-		$developmentID1=$_GET["id"];
-		echo "<script>window.location.href ='/Project/Contractors/Developments/developmentPhases.php?addPhase=$developmentID1'</script>";
-	}
-		else if (isset($_POST["phaseSubmit"])) 
+	$developmentID1=$_GET["id"];
+	$phaseID=$_GET["phaseID"];
+		if (isset($_POST["phaseSubmit"])) 
 	{
 		$developmentID2=$_GET["id"];
 		$plotsNumber=$_POST["number_plots"];
@@ -55,8 +31,12 @@
 		$dbParams7=array('development_id'=>$developmentID2,'plots_number'=>$plotsNumber,'phase_status'=>$plotStatus);
 		//yellow is database field organge = form posting
 		$dbQuery7->execute($dbParams7);
-		echo "<script>window.location.href ='/Project/Contractors/Developments/index.php?id=$developmentID2'</script>";
+		echo "<script>window.location.href ='/Project/Contractors/Developments/developmentPhases.php?id=$developmentID2'</script>";
 	}
+	// else if (isset($_POST["assignPhaseToSupplier"])) 
+	// {
+		// echo "<script>window.location.href ='/Project/Suppliers/assignPhaseToSupplier.php?phaseID=$phaseID'</script>";
+	// }
 	
 ?>
 <!doctype html>
@@ -129,8 +109,7 @@
 		
 		
 		<?php
-
-		if (isset($_GET["viewPhase"])||($_GET["addPhase"])) 
+		if (isset($_GET["viewPhase"])||($_GET["addPhase"])||$developmentID1!=null) 
 		{
 			?>
 			<div class="container">
@@ -146,17 +125,21 @@
 					</ul>
 					<div class="tab-content">
 					<?php
-				$developmentID1=$_GET["viewPhase"];
-				if($developmentID1==null)
-				{
-					$developmentID1=$_GET["addPhase"];
-				}
+					if($developmentID1==null)
+					{
+						$developmentID1=$_GET["viewPhase"];
+						if($developmentID1==null)
+						{
+							$developmentID1=$_GET["addPhase"];
+						}
+					}
 				//echo "<script>window.location.href ='/Project/index.php'</script>";
 				?>
 						<div id="phaseArea" class="container tab-pane active">
 								<table class="table table-striped">
 									<thead>
 										<tr>
+											<th></th>
 											<th>Phase ID</th>
 											<th>Development ID</th>
 											<th>Phase Number</th>
@@ -177,18 +160,21 @@
 										$phase_status=$dbRow["phase_status"];
 										$phase_id=$dbRow["phase_id"];
 										$phase_Number=$phase_Number+1;
-										echo "<form method='post' action='index.php'>
-										<tbody>
-											<tr>
-												<td>$phase_id</td>
-												<td>$development_id</td>
-												<td>$phase_Number</td>
-												<td>$plots_number</td>
-												<td>$phase_status</td>
-											</tr>
-										</tbody>
-										</form>";
+										
+										echo "<form method='post' action='/Project/Suppliers/assignPhaseToSupplier.php?DevelopmentID=$development_id&phaseID=$phase_id'>
+											<tbody>
+												<tr>
+													<td>$phase_id</td>
+													<td>$development_id</td>
+													<td>$phase_Number</td>
+													<td>$plots_number</td>
+													<td>$phase_status</td>
+													<td><button name='assignPhaseToSupplier' type='submit' class='btn btn-primary'>Assign Suppiers</button></td>
+												</tr>
+											</tbody>";
+										echo "</form>";
 									}
+									
 								?>
 								</table>
 						</div>
@@ -196,7 +182,7 @@
 						<div class="table-responsive">
 								<table class="table table-striped">
 								<?php
-									echo"<form method='post' action='index.php?id=$developmentID1'>";
+									echo"<form method='post' action='developmentPhases.php?id=$developmentID1'>";
 									?>
 										<div class="form-group col-md-6">
 											<label for="number_plots">Number of Plots</label>
@@ -215,127 +201,17 @@
 								</table>
 						</div>
 					</div>
+					<div id="phaseAddSupplier" class="container tab-pane fade">
+						<div class="table-responsive">
+								<table class="table table-striped">
+								</table>
+						</div>
+					</div>
 				</div>
 			</div>
 			<?php
 		}
 		else{
-		?>       
-		
-		<div class="container-fluid">
-		  
-			<?php
-			$dbQuery=$db->prepare("select * from development");
-			$dbQuery->execute();
-			$dataRows = $dbQuery->rowCount();
-			?>
-			<h1>Development Area</h1>
-			  
-				<ul class="nav nav-tabs role="tablist">
-		
-					<li class="nav-item">
-					  <a class="nav-link active" href="/Project/Contractors/Developments/index.php">Development Area</a>
-					</li>
-					<li class="nav-item">
-					  <a class="nav-link" href="/Project/Contractors/Developments/developmentsAdd.php">Add Development</a>
-					</li>
-				</ul><br>
-			  
-			<h3>Developments Total: <?php echo $dataRows ?></h3>
-				<div class="table-responsive">
-					<table class="table table-striped">
-						  <thead>
-							<tr>
-							  <th>Development ID</th>
-							  <th>Development Name</th>
-							  <th>Development Address</th>
-							  <th>Development Plots</th>
-							  <th>Development Status</th>
-							  <th>Development City</th>
-							  <th>Development State</th>
-							  <th>Development Postcode</th>
-							  <th>Development Image Name</th>
-							  <th>Development Image</th>
-							  <th>Development Edit</th>
-							  <th>Development Plots</th>
-							  <th>Development Phases</th>
-							</tr>
-						  </thead>
-						<?php
-						while ($dbRow = $dbQuery->fetch(PDO::FETCH_ASSOC)) 
-						{
-							$developmentID=$dbRow["development_id"];
-							$developmentName=$dbRow["development_name"];
-							$developmentAddress=$dbRow["development_address"];
-							$devlopmentStatus=$dbRow["development_status"];
-							$developmentCity=$dbRow["development_city"];
-							$developmentState=$dbRow["development_state"];
-							$developmentPostcode=$dbRow["development_postcode"];
-							$developmentImageName=$dbRow["development_imagename"];
-							$developmentImageFile=$dbRow["development_imagefile"];
-							//echo "<form method='post' action='developmentsEdit.php?id=$developmentID'>
-							
-							echo "<form method='post' action='index.php?id=$developmentID'>
-									<tbody>
-										<tr>
-											<td>$developmentID</td>
-											<td>$developmentName</td>
-											<td>$developmentAddress</td>";
-											$dbQuery5=$db->prepare("select SUM(plots_number)from development_phase WHERE development_id=:id");
-											$dbParams5=array('id'=>$developmentID);
-											$dbQuery5->execute($dbParams5);
-											while ($dbRow = $dbQuery5->fetch(PDO::FETCH_ASSOC)) 
-											{
-												$phasePlots=$dbRow['SUM(plots_number)'];
-												$developmentID2=$dbRow["development_id"];
-												$dbQuery6=$db->prepare("UPDATE development SET development_plots = '$phasePlots' WHERE development_id=:id");
-												$dbParams6=array('id'=>$developmentID);
-												$dbQuery6->execute($dbParams6);								
-												echo "<td>$phasePlots</td>";	
-											}
-											echo"
-											<td>$devlopmentStatus</td>
-											<td>$developmentCity</td>
-											<td>$developmentState</td>
-											<td>$developmentPostcode</td>
-											<td>$developmentImageName</td>
-											<td><a href='/Project/Contractors/Developments/images/$developmentImageFile'>Image Link</a></td>
-											<td><button name='editDev' type='submit' class='btn btn-primary'>Edit</button></td>";
-
-											$dbQuery2=$db->prepare("select * from plots WHERE development_id=:id");
-											$dbParams2=array('id'=>$developmentID);
-											$dbQuery2->execute($dbParams2);
-											$dataRows2 = $dbQuery2->rowCount();
-
-											if ($dataRows2 >0)
-											{
-												echo "<td><button name='viewPlot' type='submit' class='btn btn-primary'>View Plots</button></td>";
-											}
-											else
-											{
-												echo "<td><button name='addPlot' type='submit' class='btn btn-primary'>Add Plots</button></td>";
-											}
-											$dbQuery3=$db->prepare("select * from development_phase WHERE development_id=:id");
-											$dbParams3=array('id'=>$developmentID);
-											$dbQuery3->execute($dbParams3);
-											$dataRows3 = $dbQuery3->rowCount();
-											if ($dataRows3 >0)
-											{
-												echo "<td><button name='viewPhase' type='submit' class='btn btn-primary'>View Phase</button></td>";
-											}
-											else
-											{
-												echo "<td><button name='addPhase' type='submit' class='btn btn-primary'>Add Phase</button></td>";
-											}
-										echo "</tr>
-									</tbody>
-								</form>";
-						}
-						?>
-					</table>
-			  </div>
-		</div>
-		<?php
 		}
 		?>
 

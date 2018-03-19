@@ -1,8 +1,26 @@
 <?php
+	$userID=0;
 	session_start();
 	include("../dbConnect.php");
 	include("../restrictionCheck.php");
-	$userID =$_SESSION["currentUserID"];
+	include("../imageUpload.php");
+	include("../userActivity.php");
+	include("../email.php");
+	
+	  if (!isset($_SESSION["currentUserID"]))
+		{
+			header("Location: index.php");
+		}
+	
+	if (isset($_SESSION["currentUserID"]))
+	{
+	  $userID =$_SESSION["currentUserID"];
+	  
+	  	if(has_acitivity($userID))
+		{
+		}
+	}
+	$countSelections=0;
 	
 	if (isset($_POST["submit"])) 
 	{
@@ -58,6 +76,11 @@
 				echo "<script>window.location.href ='index.php'</script>";
 			}
 		}
+	}
+	else if (isset($_POST["editSelection"])) 
+	{
+		$selOptID=$_GET["optID"];
+		echo "<script>window.location.href ='/Project/Suppliers/viewSuppliersEdit.php?optID=$selOptID'</script>";
 	}
 ?>
 <!doctype html>
@@ -129,7 +152,7 @@
 				</nav>
 			</header>
 			
-						<div class="container">
+						<div class="container-fluid">
 				<h1>Supplier Area</h1>
 				  
 				<ul class="nav nav-tabs role="tablist">
@@ -145,23 +168,9 @@
 				<div class="tab-content">
 					<div id="supplierArea" class="container tab-pane active">
 						<div class="table-responsive">
-						
-						
-						
-							<table class="table table-striped">
-								<thead>
-									<tr>
-									  <th>Catrgory Name</th>
-									  <th>Selection Type</th>
-									  <th>Selection Colour</th>
-									  <th>Selection Details</th>
-									  <th>Selection Price</th>
-									  <th>sel_type_id</th>
-									  <th>CAT ID</th>
-									</tr>
-								</thead>
-								
+							<table class="table table-striped">								
 				<?php
+				$countSelections=0;
 				$dbQuery1=$db->prepare("select * from suppliers where user_id=:user_id");
 				$dbParams1=array('user_id'=>$userID);
 				$dbQuery1->execute($dbParams1);
@@ -180,6 +189,8 @@
 						$sel_opt_name=$dbRow["sel_opt_name"];
 						$sel_opt_details=$dbRow["sel_opt_details"];
 						$sel_opt_price=$dbRow["sel_opt_price"];
+						$sel_opt_price2=$dbRow["sel_opt_price2"];
+						$approval_id=$dbRow["approved"];
 						
 						$dbQuery3=$db->prepare("select * from selection_link where sel_opt_id=:sel_opt_id");
 						$dbParams3=array('sel_opt_id'=>$sel_opt_id);
@@ -207,18 +218,55 @@
 										while ($dbRow = $dbQuery6->fetch(PDO::FETCH_ASSOC))
 										{
 												$category_name=$dbRow["category_name"];
-												
-												echo "<form method='post' action='index.php'>
-													<tbody>
+												$countSelections=$countSelections+1;
+												echo "<form method='post' action='viewSuppliers.php?optID=$sel_opt_id'>";
+												if ($countSelections==1)
+												{
+													echo"<thead>
+														<tr>
+														  <th>Catrgory Name</th>
+														  <th>Selection Type</th>
+														  <th>Selection Colour</th>
+														  <th>Selection Details</th>
+														  <th>Selection Price</th>
+														  <th>Selection Price Pending</th>
+														  <th>Status</th>
+														  <th>sel_type_id</th>
+														  <th>Edit</th>
+														  
+														</tr>
+													</thead>";
+												}
+													echo "<tbody>
 														<tr>
 															<td>$category_name</td>
 															<td>$sel_type_name</td>
 															<td>$sel_opt_name</td>
 															<td>$sel_opt_details</td>
-															<td>$sel_opt_price</td>
-															<td>$sel_type_id2</td>
-															<td>$sel_opt_id</td>
-															<td>$category_name</td>
+															<td>$sel_opt_price</td>";
+															if($sel_opt_price!=$sel_opt_price2)
+															{
+															echo "<td>$sel_opt_price2</td>";
+															}
+															
+															else
+															{
+																echo "<td>No new Price pending</td>";
+															}
+															
+															
+															$dbQuery15=$db->prepare("select * from approval_information where approval_id=:approval_id ");
+															$dbParams15=array('approval_id'=>$approval_id);
+															$dbQuery15->execute($dbParams15);
+															while ($dbRow = $dbQuery15->fetch(PDO::FETCH_ASSOC))
+															{
+																$description=$dbRow["description"];
+																$colour=$dbRow["colour_code"];
+																echo "<td bgcolor='#$colour'>$description</td>";
+															}
+															
+															echo "<td>$sel_type_id2</td>
+															<td><button name='editSelection' type='submit' class='btn btn-primary'>Edit</button></td>
 														</tr>
 													</tbody>
 												</form>";

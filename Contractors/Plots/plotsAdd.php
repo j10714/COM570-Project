@@ -1,14 +1,27 @@
 <?php
+	$userID=0;
 	session_start();
 	include("../../dbConnect.php");
 	include("../../restrictionCheck.php");
-	$userID =$_SESSION["currentUserID"];
+	include("../../imageUpload.php");
+	include("../../userActivity.php");
+	include("../../email.php");
+	
+	if (isset($_SESSION["currentUserID"]))
+	{
+	  $userID =$_SESSION["currentUserID"];
+	  
+	  	if(has_acitivity($userID))
+		{
+		}
+	}
 	
 	if(!has_Restriction("contractor:administrator",$userID))
 	{
 		echo "<script>window.location.href = '/Project/permissionDeniedMessage.php?permission=0'</script>";
 	}
 	$developmentID1=$_GET["id"];
+	$phaseID=$_GET["phaseID"];
 	
 	if (isset($_POST["submit"])) 
 	{
@@ -18,13 +31,19 @@
 		$phase=$_POST["PlotPhase"];
 		$status=$_POST["PlotStatus"];
 		$developmentID=$_GET["id"];
-
-		$dbQuery=$db->prepare("insert into plots values(null,:plot_name,:house_type,:square_foot,:phase,:status,:development_id)");
-		$dbParams=array('plotName'=>$plotName, 'houseType'=>$houseType, 'squareFoot'=>$squareFoot, 'phase'=>$phase, 'status'=>$status, 'developmentID'=>$developmentID);
+		$phaseID1=$_GET["phaseID"];
+		
+		if($phaseID1==null)
+		{
+		$phaseID1=$_POST["phases"];
+		}
+		
+		$dbQuery=$db->prepare("insert into plots values(null,:plot_name,:house_type,:square_foot,:status,:development_id,:phase_id)");
+		$dbParams=array('plot_name'=>$plotName, 'house_type'=>$houseType, 'square_foot'=>$squareFoot, 'status'=>$status, 'development_id'=>$developmentID, 'phase_id'=>$phaseID1);
 		//yellow is database field organge = form posting
 		$dbQuery->execute($dbParams);
-		
-		echo "<script>window.location.href ='/Project/index.php'</script>";
+
+		echo "<script>window.location.href ='/Project/Contractors/Plots/index.php?id=$developmentID1&phaseID=$phaseID1'</script>";
 	}
 ?>
 <!doctype html>
@@ -100,19 +119,20 @@
 			<ul class="nav nav-tabs role="tablist">
 				<li class="nav-item">
 					<?php
-						echo "<a class='nav-link' href='/Project/Contractors/Plots/index.php?id=$developmentID1'>Plot Area<span class='sr-only'></span></a>";
+						echo "<a class='nav-link' href='/Project/Contractors/Plots/index.php?id=$developmentID1&phaseID=$phaseID'>Plot Area<span class='sr-only'></span></a>";
 					?>
 				</li>
 				<li class="nav-item">
 					<?php
-						echo "<a class='nav-link active' href='/Project/Contractors/Plots/plotsAdd.php?id=$developmentID1'>Add Plot<span class='sr-only'></span></a>";
+						echo "<a class='nav-link active' href='/Project/Contractors/Plots/plotsAdd.php?id=$developmentID1&phaseID=$phaseID'>Add Plot<span class='sr-only'></span></a>";
 					?>
 				</li>
 			</ul><br>
 
 			<h2>Plot Add</h2>
+			<?php echo "<h2>$phaseID</h2>";?>
 			<?php
-				echo "<form method='post' action='plotsAdd.php?id=$developmentID1'>";
+				echo "<form method='post' action='plotsAdd.php?id=$developmentID1&phaseID=$phaseID'>";
 			?>
 					<div class="form-group col-md-6">
 						<label for="inputEmail4">Plot Name</label>
@@ -138,16 +158,36 @@
 						<label for="inputCity">Plot Square Foot</label>
 						<input name="PlotSquareFoot" type="text" class="form-control" id="PlotSquareFoot">
 					</div>
-					
-					<div class="form-group col-md-2">
-						<label for="inputPostcode">Plot Phase</label>
-						<input name="PlotPhase" type="text" class="form-control" id="PlotPhase">
-					</div>
 						
 					<div class="form-group col-md-4">
 						<label for="inputPlots">Plot Status</label>
 						<input name="PlotStatus" type="text" class="form-control" id="PlotStatus" placeholder="Plot Status">
-					</div>				
+					</div>
+					<?php
+					if($phaseID==null)
+					{
+						//echo "<script>window.location.href = '/Project/permissionDeniedMessage.php?permission=0'</script>";
+						$dbQuery3=$db->prepare("select * from development_phase WHERE development_id=:id");
+						$dbParams3=array('id'=>$developmentID1);
+						$dbQuery3->execute($dbParams3);
+						$dataRows3 = $dbQuery3->rowCount();
+							?>
+							<div class="form-group col-md-4">
+								<label for="PhaseType">Phase</label>
+								<?php
+									echo "<select name='phases' class='form-control'>";
+									$phaseID2=1;
+										for ($phaseCount = 1; $phaseCount <= $dataRows3; $phaseCount++) {
+											$phaseID2=$phaseID2+1;
+											echo"<option value='$phaseCount'>Phase $phaseCount</option>";
+										} 
+									echo"</select>";
+								?>
+							</div>
+							<?php
+						
+					}
+					?>					
 						
 					<div class="form-group">
 						<div class="form-check">

@@ -23,7 +23,32 @@
 	$approved=0;
 	$reject=0;
 	$count=0;
-	$phase_id=$_GET["phaseID"];
+	// if (isset($_GET["id"])) 
+	// {	
+		// $user_identification=$_GET["id"];
+		// $supplier_status=1;
+		
+		// $dbQuery1=$db->prepare("insert into suppliers values(null,:user_id,:supplier_status)");
+		// $dbParams1=array('user_id'=>$user_identification, 'supplier_status'=>$supplier_status);
+		// //yellow is database field organge = form posting
+		// $dbQuery1->execute($dbParams1);
+		
+		// $dbQuery2=$db->prepare("select * from suppliers WHERE user_id=:user_id");
+		// $dbParams2=array('user_id'=>$user_identification);
+		// $dbQuery2->execute($dbParams2);
+		// while ($dbRow = $dbQuery2->fetch(PDO::FETCH_ASSOC)) 
+			// {
+				// $user_id1=$dbRow["user_id"];
+				// $role_id1=2;
+				
+				// $dbQuery3=$db->prepare("insert into user_roles_assign values(null,:user_id,:role_id)");
+				// $dbParams3=array('user_id'=>$user_id1, 'role_id'=>$role_id1);
+				// $dbQuery3->execute($dbParams3);
+				
+			// }
+		// echo "<script>window.location.href = '/Project/Suppliers/index.php'</script>";
+		
+	// }//if
 	
 	if (isset($_GET["supplier_id0"])) 
 	{
@@ -42,15 +67,10 @@
 			{
 				$user_id2=$dbRow["user_id"];
 				$role_id2=99;
-				$user_status=0;
 				
 				$dbQuery6=$db->prepare("UPDATE user_roles_assign SET role_id = '$role_id2' WHERE user_id=:id");
 				$dbParams6=array('id'=>$user_id2);
 				$dbQuery6->execute($dbParams6);
-				
-				$dbQuery18=$db->prepare("UPDATE users SET user_status = '$user_status' WHERE user_id=:id");
-				$dbParams18=array('id'=>$user_id2);
-				$dbQuery18->execute($dbParams18);
 				
 			}
 		echo "<script>window.location.href = '/Project/Suppliers/index.php'</script>";
@@ -61,7 +81,6 @@
 	{
 		$supplier_id=$_GET["supplier_id1"];
 		$supplier_status=1;
-		$user_status=1;
 		
 		$dbQuery7=$db->prepare("UPDATE suppliers SET supplier_status = '$supplier_status' WHERE supplier_id=:id");
 		$dbParams7=array('id'=>$supplier_id);
@@ -81,14 +100,52 @@
 				$dbParams9=array('id'=>$user_id3);
 				$dbQuery9->execute($dbParams9);
 				
-				$dbQuery19=$db->prepare("UPDATE users SET user_status = '$user_status' WHERE user_id=:id");
-				$dbParams19=array('id'=>$user_id3);
-				$dbQuery19->execute($dbParams19);
-				
 			}
 		echo "<script>window.location.href = '/Project/Suppliers/index.php'</script>";
 		
 	}//elseif
+	
+	else if (isset($_POST["approve"])) 
+	{
+	
+		if(!empty($_POST['checkAccount'])) 
+		{
+			$approved=1;
+			//echo '<h3>You have selected the following</h3>';
+			foreach($_POST["checkAccount"] as $checkAccount)
+			{
+				//echo '<p>'.$checkAccount.'</p>';
+				
+				$dbQuery16=$db->prepare("UPDATE selection_options SET approved = '$approved', sel_opt_price = sel_opt_price2 WHERE sel_opt_id=:id");
+				$dbParams16=array('id'=>$checkAccount);
+				//yellow is database field organge = form posting
+				$dbQuery16->execute($dbParams16);
+			}
+			//echo "<script>window.location.href = '/Project/Suppliers/index.php'</script>";
+		}
+		
+	}
+	
+		else if (isset($_POST["reject"])) 
+	{
+	
+		if(!empty($_POST['checkAccount'])) 
+		{
+			$reject=99;
+			//echo '<h3>You have selected the following</h3>';
+			foreach($_POST["checkAccount"] as $checkAccount)
+			{
+				//echo '<p>'.$checkAccount.'</p>';
+				
+				$dbQuery16=$db->prepare("UPDATE selection_options SET approved = '$reject' WHERE sel_opt_id=:id");
+				$dbParams16=array('id'=>$checkAccount);
+				//yellow is database field organge = form posting
+				$dbQuery16->execute($dbParams16);
+			}
+			//echo "<script>window.location.href = '/Project/Suppliers/index.php'</script>";
+		}
+		
+	}
 ?>
 <!doctype html>
 <html lang="en">
@@ -167,21 +224,24 @@
 
 			<div class="container">
 				<h1>Supplier Area</h1>
-							<ul class="nav nav-tabs role="tablist">
-								<li class="nav-item">
-									<a class="nav-link active" href="index.php">Current Suppliers</a>
-								</li>
-								<li class="nav-item">
-								  <a class="nav-link" href="selectionApproval.php">Selection Approval</a>
-								</li>
-								<li class="nav-item">
-								  <a class="nav-link" href="/Project/Register/register.php?userRole=2">Add Supplier</a>
-								</li>
-								<li class="nav-item">
-								  <a class="nav-link" href="assignPhaseToSupplier.php">Supplier Assign</a>
-								</li>
-							</ul>
-						<div class="table-responsive">
+				  
+				<ul class="nav nav-tabs role="tablist">
+					<li class="nav-item">
+						<a class="nav-link active" data-toggle="tab" href="#supplierArea">Current Suppliers</a>
+					</li>
+					<li class="nav-item">
+					  <a class="nav-link" data-toggle="tab" href="#selectionApproval">Selection Approval</a>
+					</li>
+					<li class="nav-item">
+					  <a class="nav-link" href="/Project/Register/register.php?userRole=2">Add Supplier</a>
+					</li>
+					<li class="nav-item">
+					  <a class="nav-link" data-toggle="tab" href="#assignPhaseToSupplier">Supplier Assign</a>
+					</li>
+
+				</ul>
+				<div class="tab-content">
+					<div id="supplierArea" class="container tab-pane active">
 							<table class="table table-striped">
 								<thead>
 									<tr>
@@ -220,11 +280,11 @@
 												<td>$user_id5</td>";
 												if($supplierStatus > 0 )
 												{
-													echo"<td><a class='btn btn-primary' href='index.php?supplier_id0=".$supplierID."'>Deactivate Supplier</a></td>";
+													echo"<td><a class='btn btn-primary' href='index.php?supplier_id0=".$supplierID."'>Deactivate Supplier</a></td>2";
 												}
 												else
 												{
-													echo"<td><a class='btn btn-primary' href='index.php?supplier_id1=".$supplierID."'>Activate Supplier</a></td>";
+													echo"<td><a class='btn btn-primary' href='index.php?supplier_id1=".$supplierID."'>Activate Supplier</a></td>2";
 												}
 											echo "</tr>
 										</tbody>
@@ -233,7 +293,115 @@
 								}
 							?>
 							</table>
+					</div>
+					
+					<div id="selectionApproval" class="container tab-pane fade">
+					<div class="table-responsive">
+							<table class="table table-striped">
+								<?php
+								$pending=0;
+								$dbQuery12=$db->prepare("select * from selection_options where approved=:approved");
+								$dbParams12=array('approved'=>$pending);
+								$dbQuery12->execute($dbParams12);
+							
+								while ($dbRow = $dbQuery12->fetch(PDO::FETCH_ASSOC))
+								{
+									$sel_opt_id=$dbRow["sel_opt_id"];
+									$sel_opt_name=$dbRow["sel_opt_name"];
+									$sel_opt_details=$dbRow["sel_opt_details"];
+									$sel_opt_price=$dbRow["sel_opt_price"];
+									$sel_opt_price2=$dbRow["sel_opt_price2"];
+									$supplier_id=$dbRow["supplier_id"];
+									
+									$dbQuery13=$db->prepare("select * from selection_link where sel_opt_id=:sel_opt_id");
+									$dbParams13=array('sel_opt_id'=>$sel_opt_id);
+									$dbQuery13->execute($dbParams13);
+									
+									while ($dbRow = $dbQuery13->fetch(PDO::FETCH_ASSOC))
+									{
+										$sel_type_id=$dbRow["sel_type_id"];
+										$category_id=$dbRow["category_id"];
+										
+										$dbQuery14=$db->prepare("select * from selection_types where sel_type_id=:sel_type_id");
+										$dbParams14=array('sel_type_id'=>$sel_type_id);
+										$dbQuery14->execute($dbParams14);
+										
+										while ($dbRow = $dbQuery14->fetch(PDO::FETCH_ASSOC))
+										{
+											$sel_type_id2=$dbRow["sel_type_id"];
+											$sel_type_name=$dbRow["sel_type_name"];
+												
+													$dbQuery15=$db->prepare("select * from selection_category where category_id=:category_id ");
+													$dbParams15=array('category_id'=>$category_id);
+													$dbQuery15->execute($dbParams15);
+													$dataRows = $dbQuery15->rowCount();
+													while ($dbRow = $dbQuery15->fetch(PDO::FETCH_ASSOC))
+													{
+															$category_name=$dbRow["category_name"];
+															echo "<form method='post'>";
+															$count=$count+1;
+															if ($count==1)
+															{
+																echo "<thead>
+																	<tr>
+																		<th></th>
+																		<th>Category Name</th>
+																		<th>Selection Type</th>
+																		<th>Selection Colour</th>
+																		<th>Selection Price</th>
+																		<th>Selection Price Pending</th>
+																	</tr>
+																</thead>";
+																
+	
+															}
+															
+															
+																echo "<tbody>
+																	<tr>
+																		<td>  
+																			<label class='form-check-label'><input type='checkbox' name='checkAccount[]' class='form-check-input' id='checkboxSuccess' value='$sel_opt_id'></label>
+																		</td>
+																		<td>$category_name</td>
+																		<td>$sel_type_name</td>
+																		<td>$sel_opt_details</td>
+																		<td>$sel_opt_price</td>
+																		<td>$sel_opt_price2</td>
+																	</tr>
+																</tbody>";
+																
+																if ($count==1)
+																{
+																	echo "<tfoot>
+																		 <button name='approve' type='submit' class='btn btn-primary'>Approve</button>&nbsp
+																		 <button name='reject' type='submit' class='btn btn-primary'>Reject</button>
+																	 </tfoot>
+																	 ";
+																}
+																
+															
+															
+													}
+										}
+									}
+								}
+								?>
+								</form>
+							</table>
 						</div>
+					</div>
+					
+					<div id="selectionApproval" class="container tab-pane fade">
+					<div class="table-responsive">
+							<table class="table table-striped">
+							</table>
+						</div>
+					</div>
+				</div>
+			</div>
+				
+				
+				
 			</div>
 		<?php
 		}//if for Contractor Admin view

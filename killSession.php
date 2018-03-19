@@ -10,5 +10,5 @@
 	
 	//back to Login
 	//header("Location: /Project/Login/login.php");
-	echo "<script>window.location.href ='/Project/Login/login.php'</script>";
+	echo "<script>window.location.href ='/Project/Login/index.php'</script>";
 ?> 

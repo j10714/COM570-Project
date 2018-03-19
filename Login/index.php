@@ -1,6 +1,5 @@
 <?php
    session_start();
-   
    unset($_SESSION["currentUser"]);
    unset($_SESSION["currentUserID"]);
 
@@ -11,30 +10,88 @@
 
       include("../dbConnect.php");
 	  
-      $dbQuery=$db->prepare("select * from users where user_username=:formUser"); 
-      $dbParams = array('formUser'=>$formUser);
-      $dbQuery->execute($dbParams);
 	  
-      $dbRow=$dbQuery->fetch(PDO::FETCH_ASSOC);
-	  
-      if ($dbRow["user_username"]==$formUser) 
-	  {       
-         if ($dbRow["user_password"]==$formPass) 
-		 {
-            $_SESSION["currentUser"]=$formUser;
-            $_SESSION["currentUserID"]=$dbRow["user_id"];
-            header("Location:account.php");    
-         }
-         else 
-		 {
-            header("Location: login.php?failCode=2");
-         }
-      } else 
-	  {
-            header("Location: login.php?failCode=1");
-      }
-
-   } 
+	  $dbQuery1=$db->prepare("select * from users where user_username=:formUser OR user_email=:formEmail"); 
+      $dbParams1 = array('formUser'=>$formUser,'formEmail'=>$formUser);
+      $dbQuery1->execute($dbParams1);
+	  while ($dbRow1 = $dbQuery1->fetch(PDO::FETCH_ASSOC))
+		{ 
+	  $user_status=$dbRow1["user_status"];
+		  if($user_status!=1)
+		  {
+			   header("Location: index.php?failCode=3");
+		  }
+		else
+		{
+			  $dbQuery=$db->prepare("select * from users where user_username=:formUser OR user_email=:formEmail"); 
+			  $dbParams = array('formUser'=>$formUser,'formEmail'=>$formUser);
+			  $dbQuery->execute($dbParams);
+			  
+			  $dbRow=$dbQuery->fetch(PDO::FETCH_ASSOC);
+			  
+			  if ($dbRow["user_username"]==$formUser) 
+			  {
+				 if ($dbRow["user_password"]==$formPass) 
+				 {
+					$_SESSION["currentUser"]=$formUser;
+					$_SESSION["currentUserID"]=$dbRow["user_id"];
+					header("Location:account.php");    
+				 }
+				 else 
+				 {
+					$dbPassword=$dbRow["user_password"];
+					$formPassHash=md5($formPass);
+						if ($dbPassword==$formPassHash)
+						{
+							$_SESSION["currentUser"]=$formUser;
+							$_SESSION["currentUserID"]=$dbRow["user_id"];
+							header("Location:account.php"); 
+						}
+					else
+					{
+					header("Location: index.php?failCode=2");
+					}
+				 }
+			  }
+			  else if ($dbRow["user_username"]!=$formUser)
+			  {
+				  if ($dbRow["user_email"]==$formUser) 
+					{
+						 if ($dbRow["user_password"]==$formPass) 
+						 {
+							$_SESSION["currentUser"]=$formUser;
+							$_SESSION["currentUserID"]=$dbRow["user_id"];
+							header("Location:account.php");    
+						 }
+							 else 
+							 {
+								$dbPassword=$dbRow["user_password"];
+								$formPassHash=md5($formPass);
+									if ($dbPassword==$formPassHash)
+									{
+										$_SESSION["currentUser"]=$formUser;
+										$_SESSION["currentUserID"]=$dbRow["user_id"];
+										header("Location:account.php"); 
+									}
+								else
+								{
+								header("Location: index.php?failCode=2");
+								}
+							 }
+					}
+				else
+				{
+					header("Location: index.php?failCode=1");
+				}
+				  
+			  }
+			  else
+			  {
+					header("Location: index.php?failCode=1");
+			  }
+		}
+		}
+   }   
    else 
    {
 ?>
@@ -85,10 +142,13 @@
 		<?php
 		   if (isset($_GET["failCode"])) 
 		   {
-			  if ($_GET["failCode"]==1)
-				 echo "<h3>Bad username entered</h3>";
-			  if ($_GET["failCode"]==2)
-				 echo "<h3>Bad password entered</h3>";
+				if ($_GET["failCode"]==1)
+					echo "<h3>Bad username or email entered</h3>";
+				if ($_GET["failCode"]==2)
+					echo "<h3>Bad password entered</h3>";
+				if ($_GET["failCode"]==3)
+					echo "<h3>User Account has been made Inactive, please contact administrator to resolve</h3>";
+
 		   }      
 		?>         
 
@@ -99,11 +159,11 @@
 		   </td>
 		   </tr>
 		   
-		   <form name="login" method="post" action="/Project/Login/login.php">
+		   <form name="login" method="post" action="/Project/Login/index.php">
 		   <tr>
 		   <td>
 			<div id="loginInfo"class="form-group">
-			<label for="exampleInputEmail1">Username</label>
+			<label for="exampleInputEmail1">Username or Email</label>
 			<input type="text" class="form-control" name="username">
 		  </div>
 		  </td>

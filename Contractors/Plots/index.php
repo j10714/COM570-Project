@@ -1,20 +1,42 @@
 <?php	  
+	$userID=0;
 	session_start();
 	include("../../dbConnect.php");
 	include("../../restrictionCheck.php");
-	$userID =$_SESSION["currentUserID"];
+	include("../../imageUpload.php");
+	include("../../userActivity.php");
+	include("../../email.php");
+	
+	if (isset($_SESSION["currentUserID"]))
+	{
+	  $userID =$_SESSION["currentUserID"];
+	  
+	  	if(has_acitivity($userID))
+		{
+		}
+	}
+	$phaseID=0;
 	
 	if(!has_Restriction("contractor:administrator",$userID))
 	{
 		echo "<script>window.location.href = '/Project/permissionDeniedMessage.php?permission=0'</script>";
 	}
 	$developmentID1=$_GET["id"];
+	$phaseID=$_GET["phaseID"];
+	$phaseCheck=false;
 	if(empty($developmentID1))
 	{
 		echo "No id"; 
 		//print for to prompt use for development name/id
 		
 	}
+	if (isset($_POST["test"])) 
+		{
+			$phaseID=$_GET["phaseID"];
+			echo "<script>window.location.href = 'index.php?id=$developmentID1&phaseID=$phaseID'</script>";
+			
+		}
+
 ?>
 
 <!doctype html>
@@ -84,81 +106,139 @@
 			</nav>
 		</header>
 		<?php
-			$dbQuery=$db->prepare("select * from plots WHERE development_id=:id");
-			$dbParams=array('id'=>$developmentID1);
-			$dbQuery->execute($dbParams);
-			$dataRows = $dbQuery->rowCount();
-			
-			if ($dataRows>0)
-			{
-		?>
-			<div class="container-fluid">
-				<h1>Plot Area</h1>
-				<ul class="nav nav-tabs role="tablist">
-		
-					<li class="nav-item">
-						<?php
-							echo "<a class='nav-link active' href='/Project/Contractors/Plots/index.php?id=$developmentID1'>Plot Area<span class='sr-only'></span></a>";
-						?>
-					</li>
-					<li class="nav-item">
-						<?php
-							echo "<a class='nav-link' href='/Project/Contractors/Plots/plotsAdd.php?id=$developmentID1'>Add Plot<span class='sr-only'></span></a>";
-						?>
-					</li>
-				</ul><br>
-			  
-			  
-				<div class="table-responsive">
-					<table class="table table-striped">
-						  <thead>
-							<tr>
-							  <th>Plot ID</th>
-							  <th>Plot Name</th>
-							  <th>Plot House Type</th>
-							  <th>Plot Square Foot</th>
-							  <th>Plot Phase</th>
-							  <th>Plot Status</th>
-							  <th>Development ID</th>
-							  
-							  
-							</tr>
-						  </thead>
-					  <?php
-						while ($dbRow = $dbQuery->fetch(PDO::FETCH_ASSOC)) 
+			$dbQuery2=$db->prepare("select * from plots WHERE development_id=:id");
+			$dbParams2=array('id'=>$developmentID1);
+			$dbQuery2->execute($dbParams2);
+			$dataRows2 = $dbQuery2->rowCount();
+				if ($dataRows2>0)
+				{
+					echo"<form method='post' action=''>";
+					$dbQuery3=$db->prepare("select * from development_phase WHERE development_id=:id");
+					$dbParams3=array('id'=>$developmentID1);
+					$dbQuery3->execute($dbParams3);
+					$dataRows3 = $dbQuery3->rowCount();
+					
+					echo "<br><div class='form-group col-md-2'>
+					<select name='phases' class='form-control'>";
+					for ($phaseCount = 1; $phaseCount <= $dataRows3; $phaseCount++) {
+						if($phaseCount==$phaseID)
 						{
-							$plotID=$dbRow["plot_id"];
-							$plotName=$dbRow["plot_name"];
-							$houseType=$dbRow["house_type"];
-							$squareFoot=$dbRow["square_foot"];
-							$phase=$dbRow["phase"];
-							$status=$dbRow["status"];
-							$developmentID=$dbRow["development_id"];
-
-							//echo "<form method='post' action='developmentsEdit.php?id=$developmentID'>
-								echo "<form method='post' action='index.php?id=$developmentID'>
-									<tbody>
-										<tr>
-											<td>$plotID</td>
-											<td>$plotName</td>
-											<td>$houseType</td>
-											<td>$squareFoot</td>
-											<td>$phase</td>
-											<td>$status</td>
-											<td>$developmentID</td>
-											<td><button name='editDev' type='submit' class='btn btn-primary'>Edit</button></td>
-										</tr>
-									</tbody>
-								</form>";
-
+							echo"<option value='$phaseCount' selected>Phase $phaseCount</option>";
 						}
+						else
+						{
+							echo"<option value='$phaseCount'>Phase $phaseCount</option>";
+						}
+					
+					
+					} 
+					echo"</select>
+					</div>";
 					?>
-					</table>
-				</div>
+					<div class="form-group col-md-4">
+						<button name="submit" type="submit" class="btn btn-primary">Search</button>
+						</div>
+					</form>
+					<?php
+				}
+				if($dataRows2==null)
+				{
+						echo "<script>window.location.href = 'plotsAdd.php?id=$developmentID1&phaseID=$phaseID'</script>";
+					
+				}
+				if (isset($_POST["submit"]))
+				{
+					$phaseID=$_POST["phases"];
+					echo "<script>window.location.href = 'index.php?id=$developmentID1&phaseID=$phaseID'</script>";
+					$phaseCheck=true;
+				}
+				else if ($phaseID!=null)
+				{
+					$phaseCheck=true;
+				}
+				if ($phaseCheck==true)
+				{
+					$dbQuery=$db->prepare("select * from plots WHERE development_id=:id AND phase_id=:phase_id");
+					$dbParams=array('id'=>$developmentID1,'phase_id'=>$phaseID);
+					$dbQuery->execute($dbParams);
+					$dataRows = $dbQuery->rowCount();
+					//echo "<script>window.location.href = '/Project/Contractors/Plots/index.php?id=$developmentID1'</script>";
+					?>
+					
+					<?php
+					if($dataRows<1)
+					{
+						echo "<script>window.location.href = '/Project/Contractors/Plots/plotsAdd.php?id=$developmentID1&phaseID=$phaseID'</script>";
+					}
+											?>
+				<div class="container-fluid">
+					<h1>Plot Area</h1>
+						<ul class="nav nav-tabs role="tablist">
+							<li class="nav-item">
+								<?php
+									echo "<a class='nav-link active' href='/Project/Contractors/Plots/index.php?id=$developmentID1&phaseID=$phaseID'>Plot Area<span class='sr-only'></span></a>";
+								?>
+							</li>
+							<li class="nav-item">
+								<?php
+									echo "<a class='nav-link' href='/Project/Contractors/Plots/plotsAdd.php?id=$developmentID1&phaseID=$phaseID'>Add Plot<span class='sr-only'></span></a>";
+								?>
+							</li>
+						</ul><br>
+						<div class="table-responsive">
+							<table class="table table-striped">
+								<thead>
+									<tr>
+									  <b>Results for Phase <?php echo "$phaseID";?></b>
+									</tr>
+								  </thead>
+								  <thead>
+									<tr>
+									  <th>Plot ID</th>
+									  <th>Plot Name</th>
+									  <th>Plot House Type</th>
+									  <th>Plot Square Foot</th>
+									  <th>Plot Phase</th>
+									  <th>Plot Status</th>
+									  <th>Development ID</th>
+									</tr>
+								  </thead>
+							  <?php
+								while ($dbRow = $dbQuery->fetch(PDO::FETCH_ASSOC)) 
+								{
+									$plotID=$dbRow["plot_id"];
+									$plotName=$dbRow["plot_name"];
+									$houseType=$dbRow["house_type"];
+									$squareFoot=$dbRow["square_foot"];
+									$phase=$dbRow["phase"];
+									$status=$dbRow["status"];
+									$developmentID=$dbRow["development_id"];
+									$phaseID=$dbRow["phase_id"];
+
+									//echo "<form method='post' action='developmentsEdit.php?id=$developmentID'>
+										echo "<form method='post' action='index.php?id=$developmentID'>
+											<tbody>
+												<tr>
+													<td>$plotID</td>
+													<td>$plotName</td>
+													<td>$houseType</td>
+													<td>$squareFoot</td>
+													<td>$phase</td>
+													<td>$status</td>
+													<td>$developmentID</td>
+													<td><button name='editDev' type='submit' class='btn btn-primary'>Edit</button></td>
+												</tr>
+											</tbody>
+										</form>";
+
+								}
+							?>
+							</table>
+						</div>
 			</div>
-	<?php 
-			}
-	
+				
+	<?php
+				}
 	else
 	{
 		

@@ -1,5 +1,5 @@
 <?php
-  	$userID=0;
+	$userID=0;
 	session_start();
 	include("../dbConnect.php");
 	include("../restrictionCheck.php");
@@ -20,6 +20,45 @@
 		{
 		}
 	}
+	
+	if (isset($_GET["user_id"])) 
+	{
+		$userIDAccount=$_GET["user_id"];
+		if(has_Password_Reset($userIDAccount))
+		{
+			//echo "<script>window.location.href = '/Project/Login/account.php?id=$userIDAccount'</script>";
+		}
+		
+		
+	}//if		
+	else if (isset($_GET["user_id0"])) 
+	{
+		$userIDAccount=$_GET["user_id0"];
+		$supplier_status=0;
+				
+		$dbQuery18=$db->prepare("UPDATE users SET user_status = '$user_status' WHERE user_id=:id");
+		$dbParams18=array('id'=>$userIDAccount);
+		$dbQuery18->execute($dbParams18);
+				
+		echo "<script>window.location.href = '/Project/Login/account.php'</script>";
+		
+	}//elseif
+	
+	else if (isset($_GET["user_id1"])) 
+	{
+		$userIDAccount=$_GET["user_id1"];
+		$user_status=1;
+				
+		$dbQuery18=$db->prepare("UPDATE users SET user_status = '$user_status' WHERE user_id=:id");
+		$dbParams18=array('id'=>$userIDAccount);
+		$dbQuery18->execute($dbParams18);
+				
+		echo "<script>window.location.href = '/Project/Login/account.php'</script>";
+		
+	}//elseif
+	
+     
+		//echo " and the session has been registered for: ".$username;
 ?>
 
 <!DOCTYPE html>
@@ -105,9 +144,10 @@
 				</nav>
 			</header>
 		<br>
-			<ul class="nav nav-tabs id="myTab" role="tablist">
+		
+		<ul class="nav nav-tabs id="myTab" role="tablist">
 				<li class="nav-item">
-					<a class="nav-link active" href="/Project/Login/account.php">My Account</a>
+					<a class="nav-link" href="/Project/Login/account.php">My Account</a>
 				</li>
 				
 
@@ -117,7 +157,7 @@
 		{
 			?>
 			<li class="nav-item">
-				  <a class="nav-link" href="/Project/Login/accountMaintenance.php">User Account Management</a>
+				  <a class="nav-link active" href="/Project/Login/accountMaintenance.php">User Account Management</a>
 			</li>
 			
 			<?php
@@ -127,34 +167,85 @@
 		}
 			?>
 		</ul>
-      			<div id="loginSuc" class="alert alert-info" role="alert">
-				<?php
-						include("../dbConnect.php");
-						
-						$id=$_SESSION["currentUserID"];
-						$dbQuery=$db->prepare("select * from users where user_id=:id");
-						$dbParams=array('id'=>$id);
-						$dbQuery->execute($dbParams);
-				   
-						while ($dbRow = $dbQuery->fetch(PDO::FETCH_ASSOC)) 
-						{
-							$theUsername=$dbRow["user_username"];
-							
-							echo "$theUsername is logged in";
-							$_SESSION["logedInUser"]=$theUsername;
-						}
-				?>
-			</div>
-			<?php
-				echo $_SESSION["currentUserID"];
-				echo $_SESSION["logedInUser"];
-			?>
-			<p>This content should only be visible after a successful login</p>
-
-			<form method="post" action="/Project/killSession.php">
-				<br>
-				<input type="submit" value="Sign Out" class="btn btn-primary btn-lg active" role="button">
-		   </form>
+	<?php
+	if(has_Restriction("contractor:administrator",$userID))
+	{
+		?>
+						<div class="table-responsive">
+							<table class="table table-striped">
+								<thead>
+									<tr>
+									  <th>User ID</th>
+									  <th>User Name</th>
+									  <th>Name</th>
+									  <th>User Email</th>
+									  <th>User Role</th>
+									  <th>User Last Active</th>
+									  <th>User Status</th>
+									  <th>Reset Password</th>
+									</tr>
+								</thead>
+								<?php
+									$dbQuery11=$db->prepare("select * from users WHERE user_id!=:user_id");
+									$dbParams11=array('user_id'=>$userID);
+									$dbQuery11->execute($dbParams11);
+									
+									while ($dbRow = $dbQuery11->fetch(PDO::FETCH_ASSOC)) 
+									{
+										$user_id=$dbRow["user_id"];
+										$user_username=$dbRow["user_username"];
+										$user_title=$dbRow["user_title"];
+										$user_firstname=$dbRow["user_firstname"];
+										$user_lastname=$dbRow["user_lastname"];
+										$user_email=$dbRow["user_email"];
+										$user_active=$dbRow["user_active"];
+										$user_status=$dbRow["user_status"];
+										
+										$dbQuery12=$db->prepare("select * from user_roles_assign WHERE user_id=:user_id");
+										$dbParams12=array('user_id'=>$user_id);
+										$dbQuery12->execute($dbParams12);
+										while ($dbRow = $dbQuery12->fetch(PDO::FETCH_ASSOC)) 
+										{
+											$role_id=$dbRow["role_id"];
+											
+											$dbQuery13=$db->prepare("select * from user_roles WHERE role_id=:role_id");
+											$dbParams13=array('role_id'=>$role_id);
+											$dbQuery13->execute($dbParams13);
+											while ($dbRow2 = $dbQuery13->fetch(PDO::FETCH_ASSOC)) 
+											{
+												$role_name=$dbRow2["role_name"];
+												
+												echo "<form method='post' action='index.php'>
+												<tbody>
+													<tr>
+														<td>$user_id</td>
+														<td>$user_username</td>
+														<td>$user_title $user_firstname $user_lastname</td>
+														<td>$user_email</td>
+														<td>$role_name</td>
+														<td>$user_active</td>
+														";
+														if($user_status > 0 )
+														{
+															echo"<td><a class='btn btn-primary' href='accountMaintenance.php?user_id0=".$user_id."'>Deactivate User</a></td>";
+														}
+														else
+														{
+															echo"<td><a class='btn btn-primary' href='accountMaintenance.php?user_id1=".$user_id."'>Activate User</a></td>";
+														}
+														echo"<td><a class='btn btn-primary' href='accountMaintenance.php?user_id=".$user_id."'>Reset Password</a></td>";
+													echo "</tr>
+												</tbody>
+												</form>";
+											}
+										}
+									}
+							?>
+							</table>
+						</div>
+	<?php
+	}
+	?>
 		</div> <!-- /container -->
 		
 		<!-- Bootstrap core JavaScript

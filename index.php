@@ -1,6 +1,19 @@
 <?php
+	$userID=0;
 	session_start();
-	include("dbConnect.php");	
+	include("dbConnect.php");
+	include("restrictionCheck.php");
+	include("imageUpload.php");
+	include("userActivity.php");
+	include("email.php");
+	if (isset($_SESSION["currentUserID"]))
+	{
+	  $userID =$_SESSION["currentUserID"];
+	  
+	  	if(has_acitivity($userID))
+		{
+		}
+	}
 ?>
 <!doctype html>
 <html lang="en">
@@ -29,6 +42,11 @@
 		<link href="/Project/CSS/index.css" rel="stylesheet">
 	</head>
 	<body>
+	<?php
+		if(has_Restriction("contractor:administrator",$userID))
+		{
+		?>
+		
 		<header>
 			<nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
 				<a class="navbar-brand" href="#">Carousel</a>
@@ -48,7 +66,10 @@
 						</li>
 						<li class="nav-item">
 							<a class="nav-link" href="/Project/Supplier/index.php">Suppliers</a>
-						</li>			
+						</li>
+						<li class="nav-item">
+							<a class="nav-link" href="/Project/Register/register.php">Register</a>
+						</li>						
 					</ul>
 					<ul class="navbar-nav px-3">
 						<li class="nav-item text-nowrap">
@@ -72,6 +93,90 @@
 				</div>
 			</nav>
 		</header>
+		<?php
+		}
+	 else if(has_Restriction("supplier:view",$userID))
+	{
+		?>
+		<header>
+			<nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+				<a class="navbar-brand" href="#">Carousel</a>
+				<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+					<span class="navbar-toggler-icon"></span>
+				</button>
+				<div class="collapse navbar-collapse" id="navbarCollapse">
+					<ul class="navbar-nav mr-auto">
+						<li class="nav-item active">
+							<a class="nav-link" href="/Project/index.php">Home <span class="sr-only">(current)</span></a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link" href="/Project/Supplier/index.php">Suppliers</a>
+						</li>						
+					</ul>
+					<ul class="navbar-nav px-3">
+						<li class="nav-item text-nowrap">
+							<?php 
+								if (isset($_SESSION["currentUserID"]))						 
+								{
+								?>
+								<a class="nav-link" href="/Project/Login/account.php"><?php echo $_SESSION["currentUser"];?>'s Account</a>
+								<?php
+								}
+								else
+								{
+								?>
+								<a class="nav-link" href="/Project/Login/account.php">Login</a>
+								<?php
+									
+								}
+							?>
+						</li>
+					</ul>
+				</div>
+			</nav>
+		</header>
+		<?php
+	}
+	else
+	{
+		?>
+				<header>
+			<nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+				<a class="navbar-brand" href="#">Carousel</a>
+				<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+					<span class="navbar-toggler-icon"></span>
+				</button>
+				<div class="collapse navbar-collapse" id="navbarCollapse">
+					<ul class="navbar-nav mr-auto">
+						<li class="nav-item active">
+							<a class="nav-link" href="/Project/index.php">Home <span class="sr-only">(current)</span></a>
+						</li>					
+					</ul>
+					<ul class="navbar-nav px-3">
+						<li class="nav-item text-nowrap">
+							<?php 
+								if (isset($_SESSION["currentUserID"]))						 
+								{
+								?>
+								<a class="nav-link" href="/Project/Login/account.php"><?php echo $_SESSION["currentUser"];?>'s Account</a>
+								<?php
+								}
+								else
+								{
+								?>
+								<a class="nav-link" href="/Project/Login/account.php">Login</a>
+								<?php
+									
+								}
+							?>
+						</li>
+					</ul>
+				</div>
+			</nav>
+		</header>
+		<?php
+	}
+	?>
 		
 		
 		<div class="container-fluid">
